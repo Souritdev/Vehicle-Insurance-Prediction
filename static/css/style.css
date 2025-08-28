@@ -5,35 +5,26 @@ body {
   align-items: center;
   min-height: 100vh;
   margin: 0;
-  background: linear-gradient(135deg, #667eea, #764ba2, #ff758c);
-  background-size: 300% 300%;
-  animation: gradientBG 12s ease infinite;
-  color: #fff;
-}
-
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  background: linear-gradient(135deg, #f0f2f5, #dfe6e9); /* soft neutral */
+  color: #2d3436;
 }
 
 .container {
   width: 100%;
-  max-width: 500px;
-  background: rgba(255, 255, 255, 0.15);
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.9);
   padding: 28px;
-  border-radius: 18px;
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.2); /* glass effect */
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 200, 200, 0.4);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   text-align: center;
-  color: #fff;
-  animation: fadeIn 1s ease;
+  animation: fadeIn 0.8s ease;
   transition: transform 0.3s ease;
 }
 
 .container:hover {
-  transform: translateY(-5px) scale(1.01);
+  transform: translateY(-4px);
 }
 
 @keyframes fadeIn {
@@ -44,87 +35,85 @@ body {
 h1 {
   margin-bottom: 20px;
   font-weight: 700;
-  font-size: 32px;
-  background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fad0c4, #fbc2eb, #a6c1ee);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: 1.5px;
+  font-size: 28px;
+  color: #2d3436; /* professional clean title */
+  letter-spacing: 0.8px;
 }
-
 
 form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 label {
   text-align: left;
   font-weight: 600;
-  font-size: 14px;
-  color: #f8f9fa;
+  font-size: 15px;
+  color: #2d3436;
 }
 
 input {
   padding: 12px 14px;
-  border: none;
+  border: 1px solid #dcdde1;
   border-radius: 10px;
   font-size: 15px;
-  background: rgba(255, 255, 255, 0.85);
-  color: #333;
-  transition: all 0.3s ease;
+  background: #fff;
+  color: #2d3436;
+  transition: all 0.2s ease;
 }
 
 input:focus {
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+  border-color: #0984e3;
+  box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.15);
   outline: none;
-  transform: scale(1.02);
 }
 
-/* ===== Buttons ===== */
+/* ===== Buttons (professional look) ===== */
 button {
   padding: 12px 18px;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  background: #0984e3; /* clean SaaS blue */
   color: #fff;
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 16px rgba(79, 172, 254, 0.4);
+  letter-spacing: 0.4px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(9, 132, 227, 0.25);
 }
 
 button:hover {
-  background: linear-gradient(135deg, #3a8dff, #0099ff);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(0, 153, 255, 0.5);
+  background: #0769b8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(9, 132, 227, 0.35);
 }
 
 .train-button {
-  background: linear-gradient(135deg, #43e97b, #38f9d7);
-  box-shadow: 0 6px 16px rgba(67, 233, 123, 0.4);
+  background: #00b894; /* green accent */
+  box-shadow: 0 4px 10px rgba(0, 184, 148, 0.25);
   margin-top: 10px;
 }
 
 .train-button:hover {
-  background: linear-gradient(135deg, #2ecc71, #1abc9c);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(26, 188, 156, 0.5);
+  background: #019875;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 184, 148, 0.35);
 }
 
+/* ===== Result Box ===== */
 .result {
-  margin-top: 24px;
+  margin-top: 22px;
   padding: 15px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  background: #f5f6fa;
+  border: 1px solid #dfe6e9;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  text-align: left;
 }
 
 .result h2 {
   font-weight: 700;
-  color: #ffeb3b;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  color: #2d3436;
 }
