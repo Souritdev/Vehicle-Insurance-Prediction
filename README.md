@@ -26,7 +26,7 @@ Seamless Cloud Integration: AWS setup and S3 storage for models and artifacts.
 
 Automated CI/CD Pipeline:
 
-Dockerized deployments
+Dockerized deployments 🐬
 
 GitHub Actions & Self-Hosted Runner
 
