@@ -1,4 +1,4 @@
-🚗 Vehicle MLops Project
+🚗 Vehicle Insurance Prediction -- MLops Project
 End-to-end Automation of Machine Learning Workflows: Data ➡️ Model ➡️ CI/CD ➡️ Cloud
 Delivering Robust, Scalable ML Solutions—Ready for the Real World!
 
