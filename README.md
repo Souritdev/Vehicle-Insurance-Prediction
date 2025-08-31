@@ -257,6 +257,6 @@ app.py: FastAPI/Flask routes
 🔒 Secrets & Environment Variables
 Store sensitive credentials as environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ECR_REPO).
 
-Configure via Github Secrets:
+Configure via Github Secrets: 🔍
 
 Repo → Settings → Secrets and Variables → NewRepoSecret
