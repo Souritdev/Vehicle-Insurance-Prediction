@@ -151,6 +151,7 @@ class SimpleStorageService:
                 folder_obj = folder_name + "/"
                 self.s3_client.put_object(Bucket=bucket_name, Key=folder_obj)
             logging.info("Exited the create_folder method of SimpleStorageService class")
+            
 
     def upload_file(self, from_filename: str, to_filename: str, bucket_name: str, remove: bool = True):
         """
