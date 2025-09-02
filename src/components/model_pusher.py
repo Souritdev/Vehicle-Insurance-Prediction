@@ -1,5 +1,4 @@
 import sys
-
 from src.cloud_storage.aws_storage import SimpleStorageService
 from src.exception import MyException
 from src.logger import logging
@@ -18,32 +17,42 @@ class ModelPusher:
         self.s3 = SimpleStorageService()
         self.model_evaluation_artifact = model_evaluation_artifact
         self.model_pusher_config = model_pusher_config
-        self.proj1_estimator = Proj1Estimator(bucket_name=model_pusher_config.bucket_name,
-                                model_path=model_pusher_config.s3_model_key_path)
+        self.proj1_estimator = Proj1Estimator(
+            bucket_name=model_pusher_config.bucket_name,
+            model_path=model_pusher_config.s3_model_key_path
+        )
 
     def initiate_model_pusher(self) -> ModelPusherArtifact:
         """
-        Method Name :   initiate_model_evaluation
-        Description :   This function is used to initiate all steps of the model pusher
-        
-        Output      :   Returns model evaluation artifact
-        On Failure  :   Write an exception log and then raise an exception
+        Upload trained model to S3 and return artifact details
         """
-        logging.info("Entered initiate_model_pusher method of ModelTrainer class")
+        logging.info("Entered initiate_model_pusher method of ModelPusher class")
 
         try:
-            print("------------------------------------------------------------------------------------------------")
-            logging.info("Uploading artifacts folder to s3 bucket")
-            
-            logging.info("Uploading new model to S3 bucket....")
-            self.proj1_estimator.save_model(from_file=self.model_evaluation_artifact.trained_model_path)
-            model_pusher_artifact = ModelPusherArtifact(bucket_name=self.model_pusher_config.bucket_name,
-                                                        s3_model_path=self.model_pusher_config.s3_model_key_path)
+            print("---------------------------------------------------------------")
+            print(f"✅ Trained model local path: {self.model_evaluation_artifact.trained_model_path}")
+            print(f"✅ Target bucket: {self.model_pusher_config.bucket_name}")
+            print(f"✅ Target S3 key (model_path): {self.model_pusher_config.s3_model_key_path}")
 
-            logging.info("Uploaded artifacts folder to s3 bucket")
+            logging.info("Uploading new model to S3 bucket....")
+
+            # Upload trained model file to S3
+            self.proj1_estimator.save_model(
+                from_file=self.model_evaluation_artifact.trained_model_path
+            )
+
+            model_pusher_artifact = ModelPusherArtifact(
+                bucket_name=self.model_pusher_config.bucket_name,
+                s3_model_path=self.model_pusher_config.s3_model_key_path
+            )
+
+            print(f"🎯 Model successfully uploaded to s3://{model_pusher_artifact.bucket_name}/"
+                  f"{model_pusher_artifact.s3_model_path}")
+
             logging.info(f"Model pusher artifact: [{model_pusher_artifact}]")
-            logging.info("Exited initiate_model_pusher method of ModelTrainer class")
-            
+            logging.info("Exited initiate_model_pusher method of ModelPusher class")
+
             return model_pusher_artifact
+
         except Exception as e:
             raise MyException(e, sys) from e
