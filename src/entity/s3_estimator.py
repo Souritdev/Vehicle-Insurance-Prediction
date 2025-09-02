@@ -1,53 +1,66 @@
-import sys
-from pandas import DataFrame
 from src.cloud_storage.aws_storage import SimpleStorageService
 from src.exception import MyException
 from src.entity.estimator import MyModel
+import sys
+from pandas import DataFrame
 
 
 class Proj1Estimator:
     """
-    This class is used to save and retrieve our model from S3 and do predictions
+    This class is used to save and retrieve our model from s3 bucket and to do prediction
     """
 
-    def __init__(self, bucket_name: str, model_path: str):
-        try:
-            self.bucket_name = bucket_name
-            self.model_path = model_path
-            self.s3 = SimpleStorageService()
-            self.loaded_model: MyModel = None
-        except Exception as e:
-            raise MyException(e, sys) from e
+    def __init__(self,bucket_name,model_path,):
+        """
+        :param bucket_name: Name of your model bucket
+        :param model_path: Location of your model in bucket
+        """
+        self.bucket_name = bucket_name
+        self.s3 = SimpleStorageService()
+        self.model_path = model_path
+        self.loaded_model:MyModel=None
 
-    def is_model_present(self) -> bool:
-        """Check if model exists in S3"""
-        try:
-            return self.s3.s3_key_path_available(bucket_name=self.bucket_name, s3_key=self.model_path)
-        except Exception as e:
-            raise MyException(e, sys) from e
 
-    def load_model(self) -> MyModel:
-        """Load the model from S3"""
+    def is_model_present(self,model_path):
         try:
-            if self.loaded_model is None:
-                self.loaded_model = self.s3.load_model(model_path=self.model_path, bucket_name=self.bucket_name)
-            return self.loaded_model
-        except Exception as e:
-            raise MyException(e, sys) from e
+            return self.s3.s3_key_path_available(bucket_name=self.bucket_name, s3_key=model_path)
+        except MyException as e:
+            print(e)
+            return False
 
-    def save_model(self, from_file: str, remove: bool = False) -> None:
-        """Upload a local model file to S3"""
+    def load_model(self,)->MyModel:
+        """
+        Load the model from the model_path
+        :return:
+        """
+
+        return self.s3.load_model(self.model_path,bucket_name=self.bucket_name)
+
+    def save_model(self,from_file,remove:bool=False)->None:
+        """
+        Save the model to the model_path
+        :param from_file: Your local system model path
+        :param remove: By default it is false that mean you will have your model locally available in your system folder
+        :return:
+        """
         try:
-            self.s3.upload_file(from_file=from_file, to_filename=self.model_path,
-                                bucket_name=self.bucket_name, remove=remove)
+            self.s3.upload_file(from_file,
+                                to_filename=self.model_path,
+                                bucket_name=self.bucket_name,
+                                remove=remove
+                                )
         except Exception as e:
-            raise MyException(e, sys) from e
+            raise MyException(e, sys)
 
-    def predict(self, dataframe: DataFrame):
-        """Predict using the loaded model"""
+
+    def predict(self,dataframe:DataFrame):
+        """
+        :param dataframe:
+        :return:
+        """
         try:
             if self.loaded_model is None:
                 self.loaded_model = self.load_model()
-            return self.loaded_model.predict(dataframe)
+            return self.loaded_model.predict(dataframe=dataframe)
         except Exception as e:
-            raise MyException(e, sys) from e
+            raise MyException(e, sys)
