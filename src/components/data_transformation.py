@@ -1,12 +1,12 @@
 import sys
 import numpy as np
 import pandas as pd
-from imblearn.combine import SMOTEENN # type: ignore
+from imblearn.combine import SMOTEENN  # type: ignore
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.compose import ColumnTransformer
 
-from src.constants import TARGET_COLUMN, SCHEMA_FILE_PATH, CURRENT_YEAR
+from src.constants import TARGET_COLUMN, SCHEMA_FILE_PATH
 from src.entity.config_entity import DataTransformationConfig
 from src.entity.artifact_entity import DataTransformationArtifact, DataIngestionArtifact, DataValidationArtifact
 from src.exception import MyException
@@ -35,9 +35,8 @@ class DataTransformation:
 
     def get_data_transformer_object(self) -> Pipeline:
         """
-        Creates and returns a data transformer object for the data, 
-        including gender mapping, dummy variable creation, column renaming,
-        feature scaling, and type adjustments.
+        Creates and returns a data transformer object for the data.
+        Includes scaling for numeric features using StandardScaler and MinMaxScaler.
         """
         logging.info("Entered get_data_transformer_object method of DataTransformation class")
 
@@ -45,12 +44,20 @@ class DataTransformation:
             # Initialize transformers
             numeric_transformer = StandardScaler()
             min_max_scaler = MinMaxScaler()
-            logging.info("Transformers Initialized: StandardScaler-MinMaxScaler")
+            logging.info("Transformers Initialized: StandardScaler and MinMaxScaler")
 
             # Load schema configurations
             num_features = self._schema_config['num_features']
             mm_columns = self._schema_config['mm_columns']
-            logging.info("Cols loaded from schema.")
+
+            # Ensure they’re lists (avoid unhashable type errors)
+            if isinstance(num_features, str):
+                num_features = [num_features]
+            if isinstance(mm_columns, str):
+                mm_columns = [mm_columns]
+
+            logging.info(f"Num features: {num_features}")
+            logging.info(f"MinMax features: {mm_columns}")
 
             # Creating preprocessor pipeline
             preprocessor = ColumnTransformer(
@@ -74,7 +81,8 @@ class DataTransformation:
     def _map_gender_column(self, df):
         """Map Gender column to 0 for Female and 1 for Male."""
         logging.info("Mapping 'Gender' column to binary values")
-        df['Gender'] = df['Gender'].map({'Female': 0, 'Male': 1}).astype(int)
+        if "Gender" in df.columns:
+            df['Gender'] = df['Gender'].map({'Female': 0, 'Male': 1}).astype(int)
         return df
 
     def _create_dummy_columns(self, df):
@@ -96,11 +104,16 @@ class DataTransformation:
         return df
 
     def _drop_id_column(self, df):
-        """Drop the 'id' column if it exists."""
-        logging.info("Dropping 'id' column")
-        drop_col = self._schema_config['drop_columns']
-        if drop_col in df.columns:
-            df = df.drop(drop_col, axis=1)
+        """Drop the columns defined in schema.yaml"""
+        logging.info("Dropping columns defined in schema.yaml")
+        drop_cols = self._schema_config['drop_columns']
+
+        # Ensure it's always a list
+        if isinstance(drop_cols, str):
+            drop_cols = [drop_cols]
+
+        # Drop only existing columns
+        df = df.drop(columns=[col for col in drop_cols if col in df.columns], errors="ignore")
         return df
 
     def initiate_data_transformation(self) -> DataTransformationArtifact:
@@ -124,28 +137,25 @@ class DataTransformation:
             target_feature_test_df = test_df[TARGET_COLUMN]
             logging.info("Input and Target cols defined for both train and test df.")
 
-            # Apply custom transformations in specified sequence
-            input_feature_train_df = self._map_gender_column(input_feature_train_df)
-            input_feature_train_df = self._drop_id_column(input_feature_train_df)
-            input_feature_train_df = self._create_dummy_columns(input_feature_train_df)
-            input_feature_train_df = self._rename_columns(input_feature_train_df)
+            # Apply custom transformations
+            for func in [self._map_gender_column, self._drop_id_column, self._create_dummy_columns, self._rename_columns]:
+                input_feature_train_df = func(input_feature_train_df)
+                input_feature_test_df = func(input_feature_test_df)
 
-            input_feature_test_df = self._map_gender_column(input_feature_test_df)
-            input_feature_test_df = self._drop_id_column(input_feature_test_df)
-            input_feature_test_df = self._create_dummy_columns(input_feature_test_df)
-            input_feature_test_df = self._rename_columns(input_feature_test_df)
             logging.info("Custom transformations applied to train and test data")
 
-            logging.info("Starting data transformation")
+            # Preprocessor
             preprocessor = self.get_data_transformer_object()
             logging.info("Got the preprocessor object")
 
+            # Transform train & test data
             logging.info("Initializing transformation for Training-data")
             input_feature_train_arr = preprocessor.fit_transform(input_feature_train_df)
             logging.info("Initializing transformation for Testing-data")
             input_feature_test_arr = preprocessor.transform(input_feature_test_df)
             logging.info("Transformation done end to end to train-test df.")
 
+            # Handle imbalance
             logging.info("Applying SMOTEENN for handling imbalanced dataset.")
             smt = SMOTEENN(sampling_strategy="minority")
             input_feature_train_final, target_feature_train_final = smt.fit_resample(
@@ -156,10 +166,12 @@ class DataTransformation:
             )
             logging.info("SMOTEENN applied to train-test df.")
 
+            # Combine features + target
             train_arr = np.c_[input_feature_train_final, np.array(target_feature_train_final)]
             test_arr = np.c_[input_feature_test_final, np.array(target_feature_test_final)]
             logging.info("feature-target concatenation done for train-test df.")
 
+            # Save objects
             save_object(self.data_transformation_config.transformed_object_file_path, preprocessor)
             save_numpy_array_data(self.data_transformation_config.transformed_train_file_path, array=train_arr)
             save_numpy_array_data(self.data_transformation_config.transformed_test_file_path, array=test_arr)

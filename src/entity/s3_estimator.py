@@ -23,29 +23,34 @@ class Proj1Estimator:
         self.model_path = model_path
         self.loaded_model: Optional[MyModel] = None
 
-    def is_model_present(self, model_path: str) -> bool:
+    def is_model_present(self, model_path: Optional[str] = None) -> bool:
         """
         Check if the model exists in S3.
         """
         try:
+            model_key = model_path or self.model_path
             return self.s3.s3_key_path_available(
                 bucket_name=self.bucket_name,
-                s3_key=model_path
+                s3_key=model_key
             )
-        except MyException as e:
+        except Exception as e:
             logging.error(f"Error while checking model in S3: {e}")
             return False
 
     def load_model(self) -> MyModel:
         """
-        Load the model from S3 and store it in memory.
+        Load and unpickle the model from S3 into memory.
         """
         try:
             logging.info(f"Loading model from S3: {self.bucket_name}/{self.model_path}")
-            self.loaded_model = self.s3.load_model(
-                self.model_path,
+            self.loaded_model: MyModel = self.s3.load_model(
+                model_name=self.model_path,
                 bucket_name=self.bucket_name
             )
+            if not isinstance(self.loaded_model, MyModel):
+                raise TypeError(
+                    f"Loaded object is not MyModel. Got: {type(self.loaded_model)}"
+                )
             return self.loaded_model
         except Exception as e:
             raise MyException(e, sys)
@@ -59,7 +64,7 @@ class Proj1Estimator:
         try:
             logging.info(f"Saving model to S3: {self.bucket_name}/{self.model_path}")
             self.s3.upload_file(
-                from_file,
+                from_filename=from_file,
                 to_filename=self.model_path,
                 bucket_name=self.bucket_name,
                 remove=remove
@@ -67,16 +72,17 @@ class Proj1Estimator:
         except Exception as e:
             raise MyException(e, sys)
 
-    def predict(self, dataframe: DataFrame) -> DataFrame:
+    def predict(self, dataframe: DataFrame):
         """
         Run predictions using the loaded model. Loads model from S3 if not already in memory.
         :param dataframe: Input features as pandas DataFrame
-        :return: Predictions as a pandas DataFrame
+        :return: Predictions
         """
         try:
             if self.loaded_model is None:
                 logging.info("Model not loaded in memory. Loading now...")
                 self.load_model()
+
             return self.loaded_model.predict(dataframe=dataframe)
         except Exception as e:
             raise MyException(e, sys)
