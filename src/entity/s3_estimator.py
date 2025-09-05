@@ -29,10 +29,12 @@ class Proj1Estimator:
         """
         try:
             model_key = model_path or self.model_path
-            return self.s3.s3_key_path_available(
+            exists = self.s3.s3_key_path_available(
                 bucket_name=self.bucket_name,
                 s3_key=model_key
             )
+            logging.info(f"Model presence check for {model_key}: {exists}")
+            return exists
         except Exception as e:
             logging.error(f"Error while checking model in S3: {e}")
             return False
@@ -42,7 +44,7 @@ class Proj1Estimator:
         Load and unpickle the model from S3 into memory.
         """
         try:
-            logging.info(f"Loading model from S3: {self.bucket_name}/{self.model_path}")
+            logging.info(f"Loading model from S3: s3://{self.bucket_name}/{self.model_path}")
             self.loaded_model: MyModel = self.s3.load_model(
                 model_name=self.model_path,
                 bucket_name=self.bucket_name
@@ -51,6 +53,7 @@ class Proj1Estimator:
                 raise TypeError(
                     f"Loaded object is not MyModel. Got: {type(self.loaded_model)}"
                 )
+            logging.info("✅ Model successfully loaded into memory")
             return self.loaded_model
         except Exception as e:
             raise MyException(e, sys)
@@ -62,13 +65,14 @@ class Proj1Estimator:
         :param remove: If True, delete local file after upload
         """
         try:
-            logging.info(f"Saving model to S3: {self.bucket_name}/{self.model_path}")
+            logging.info(f"Saving model to S3: s3://{self.bucket_name}/{self.model_path}")
             self.s3.upload_file(
                 from_filename=from_file,
                 to_filename=self.model_path,
                 bucket_name=self.bucket_name,
                 remove=remove
             )
+            logging.info("✅ Model successfully uploaded to S3")
         except Exception as e:
             raise MyException(e, sys)
 
@@ -83,6 +87,8 @@ class Proj1Estimator:
                 logging.info("Model not loaded in memory. Loading now...")
                 self.load_model()
 
-            return self.loaded_model.predict(dataframe=dataframe)
+            predictions = self.loaded_model.predict(dataframe=dataframe)
+            logging.info(f"✅ Predictions generated for {len(dataframe)} rows")
+            return predictions
         except Exception as e:
             raise MyException(e, sys)

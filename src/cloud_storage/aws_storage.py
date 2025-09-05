@@ -1,7 +1,7 @@
 import boto3
 import os, sys, pickle
 from io import StringIO
-from typing import Union, List, Optional
+from typing import Union, Optional
 from pandas import DataFrame, read_csv
 from botocore.exceptions import ClientError
 from mypy_boto3_s3.service_resource import Bucket
@@ -44,14 +44,20 @@ class SimpleStorageService:
     ) -> Union[StringIO, str, bytes]:
         """
         Reads the specified S3 object with optional decoding and formatting.
-        :param object_name: boto3 ObjectSummary or list with one ObjectSummary
+        :param object_name: boto3 ObjectSummary (NOT a list!)
         :param decode: Whether to decode bytes to string
         :param make_readable: Whether to return as StringIO for pandas
         """
         try:
+            # 🚨 Safety check for wrong usage
             if isinstance(object_name, list):
-                logging.debug(f"[DEBUG] read_object received LIST, using first element.")
+                if not object_name:
+                    raise ValueError("read_object received empty list")
+                logging.warning("[WARN] read_object received a list, using the first element")
                 object_name = object_name[0]
+
+            if not hasattr(object_name, "get"):
+                raise TypeError(f"Expected boto3 Object, got {type(object_name)}")
 
             logging.debug(f"[DEBUG] Reading object: {object_name.key}")
             body = object_name.get()["Body"].read()
@@ -60,6 +66,7 @@ class SimpleStorageService:
                 body = body.decode()
 
             return StringIO(body) if make_readable else body
+
         except Exception as e:
             logging.error(f"[ERROR] Failed to read S3 object {object_name}: {e}")
             raise MyException(e, sys) from e
@@ -84,7 +91,7 @@ class SimpleStorageService:
             if len(file_objects) > 1:
                 logging.warning(f"[WARN] Multiple files found for prefix '{filename}', returning first match.")
 
-            return file_objects[0]
+            return file_objects[0]  # ✅ always return a single object
         except Exception as e:
             raise MyException(e, sys) from e
 
