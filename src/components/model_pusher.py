@@ -11,8 +11,7 @@ class ModelPusher:
     def __init__(self, model_evaluation_artifact: ModelEvaluationArtifact,
                  model_pusher_config: ModelPusherConfig):
         """
-        :param model_evaluation_artifact: Output reference of data evaluation artifact stage
-        :param model_pusher_config: Configuration for model pusher
+        Handles uploading the trained model to S3.
         """
         self.s3 = SimpleStorageService()
         self.model_evaluation_artifact = model_evaluation_artifact
@@ -24,32 +23,36 @@ class ModelPusher:
 
     def initiate_model_pusher(self) -> ModelPusherArtifact:
         """
-        Upload trained model to S3 and return artifact details
+        Upload trained model to S3 and return artifact details.
         """
         logging.info("Entered initiate_model_pusher method of ModelPusher class")
 
         try:
-            print("---------------------------------------------------------------")
-            print(f"✅ Trained model local path: {self.model_evaluation_artifact.trained_model_path}")
-            print(f"✅ Target bucket: {self.model_pusher_config.bucket_name}")
-            print(f"✅ Target S3 key (model_path): {self.model_pusher_config.s3_model_key_path}")
+            trained_model_local_path = self.model_evaluation_artifact.trained_model_path
+            bucket_name = self.model_pusher_config.bucket_name
+            s3_key_path = self.model_pusher_config.s3_model_key_path
 
-            logging.info("Uploading new model to S3 bucket....")
+            logging.info(f"Trained model local path: {trained_model_local_path}")
+            logging.info(f"Target bucket: {bucket_name}")
+            logging.info(f"Target S3 key: {s3_key_path}")
+
+            logging.info("Uploading new model to S3 bucket...")
 
             # Upload trained model file to S3
             self.proj1_estimator.save_model(
-                from_file=self.model_evaluation_artifact.trained_model_path
+                from_file=trained_model_local_path,
+                remove=False  # keep local copy unless you want it deleted
             )
 
             model_pusher_artifact = ModelPusherArtifact(
-                bucket_name=self.model_pusher_config.bucket_name,
-                s3_model_path=self.model_pusher_config.s3_model_key_path
+                bucket_name=bucket_name,
+                s3_model_path=s3_key_path
             )
 
-            print(f"🎯 Model successfully uploaded to s3://{model_pusher_artifact.bucket_name}/"
-                  f"{model_pusher_artifact.s3_model_path}")
-
-            logging.info(f"Model pusher artifact: [{model_pusher_artifact}]")
+            logging.info(
+                f"Model successfully uploaded to s3://{bucket_name}/{s3_key_path}"
+            )
+            logging.info(f"Model pusher artifact: {model_pusher_artifact}")
             logging.info("Exited initiate_model_pusher method of ModelPusher class")
 
             return model_pusher_artifact

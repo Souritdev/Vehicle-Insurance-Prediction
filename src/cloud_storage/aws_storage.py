@@ -1,5 +1,5 @@
 import boto3
-import os, sys, pickle
+import os, sys, dill
 from io import StringIO
 from typing import Union, Optional
 from pandas import DataFrame, read_csv
@@ -49,17 +49,16 @@ class SimpleStorageService:
         :param make_readable: Whether to return as StringIO for pandas
         """
         try:
-            # 🚨 Safety check for wrong usage
             if isinstance(object_name, list):
                 if not object_name:
                     raise ValueError("read_object received empty list")
-                logging.warning("[WARN] read_object received a list, using the first element")
+                logging.warning("read_object received a list, using the first element")
                 object_name = object_name[0]
 
             if not hasattr(object_name, "get"):
                 raise TypeError(f"Expected boto3 Object, got {type(object_name)}")
 
-            logging.debug(f"[DEBUG] Reading object: {object_name.key}")
+            logging.debug(f"Reading object: {object_name.key}")
             body = object_name.get()["Body"].read()
 
             if decode:
@@ -68,7 +67,7 @@ class SimpleStorageService:
             return StringIO(body) if make_readable else body
 
         except Exception as e:
-            logging.error(f"[ERROR] Failed to read S3 object {object_name}: {e}")
+            logging.error(f"Failed to read S3 object {object_name}: {e}")
             raise MyException(e, sys) from e
 
     def get_bucket(self, bucket_name: str) -> Bucket:
@@ -89,22 +88,22 @@ class SimpleStorageService:
                 raise FileNotFoundError(f"No files found in {bucket_name} with prefix '{filename}'")
 
             if len(file_objects) > 1:
-                logging.warning(f"[WARN] Multiple files found for prefix '{filename}', returning first match.")
+                logging.warning(f"Multiple files found for prefix '{filename}', returning first match.")
 
-            return file_objects[0]  # ✅ always return a single object
+            return file_objects[0]
         except Exception as e:
             raise MyException(e, sys) from e
 
     def load_model(self, model_name: str, bucket_name: str, model_dir: Optional[str] = None) -> object:
         """
-        Load a pickled model from S3.
-        WARNING: Only use with trusted sources (pickle is unsafe otherwise).
+        Load a dill-pickled model from S3.
+        WARNING: Only use with trusted sources.
         """
         try:
             model_file = f"{model_dir}/{model_name}" if model_dir else model_name
             file_object = self.get_file_object(model_file, bucket_name)
             model_obj = self.read_object(file_object, decode=False)
-            model = pickle.loads(model_obj)
+            model = dill.loads(model_obj)  # fixed: use dill
             logging.info(f"Model '{model_name}' loaded from s3://{bucket_name}/{model_file}")
             return model
         except Exception as e:
@@ -127,11 +126,11 @@ class SimpleStorageService:
         :param remove: If True, remove local file after upload
         """
         try:
-            logging.debug(f"[DEBUG] Uploading {from_filename} → s3://{bucket_name}/{to_filename}")
+            logging.debug(f"Uploading {from_filename} -> s3://{bucket_name}/{to_filename}")
             self.s3_resource.meta.client.upload_file(from_filename, bucket_name, to_filename)
             if remove and os.path.exists(from_filename):
                 os.remove(from_filename)
-                logging.debug(f"[DEBUG] Local file {from_filename} removed after upload")
+                logging.debug(f"Local file {from_filename} removed after upload")
         except Exception as e:
             raise MyException(e, sys) from e
 
@@ -142,7 +141,7 @@ class SimpleStorageService:
         try:
             data_frame.to_csv(local_filename, index=False, header=True)
             self.upload_file(local_filename, bucket_filename, bucket_name)
-            logging.info(f"DataFrame uploaded as CSV → s3://{bucket_name}/{bucket_filename}")
+            logging.info(f"DataFrame uploaded as CSV -> s3://{bucket_name}/{bucket_filename}")
         except Exception as e:
             raise MyException(e, sys) from e
 
@@ -153,7 +152,7 @@ class SimpleStorageService:
         try:
             content = self.read_object(object_, make_readable=True)
             df = read_csv(content, na_values="na")
-            logging.debug(f"[DEBUG] DataFrame loaded with shape {df.shape}")
+            logging.debug(f"DataFrame loaded with shape {df.shape}")
             return df
         except Exception as e:
             raise MyException(e, sys) from e
