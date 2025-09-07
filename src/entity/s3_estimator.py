@@ -16,7 +16,7 @@ class Proj1Estimator:
     def __init__(self, bucket_name: str, model_path: str):
         """
         :param bucket_name: Name of your S3 bucket
-        :param model_path: Path (key) of the model file in the bucket
+        :param model_path: Full path (key) of the model file in the bucket
         """
         self.bucket_name = bucket_name
         self.s3 = SimpleStorageService()
@@ -45,15 +45,25 @@ class Proj1Estimator:
         """
         try:
             logging.info(f"Loading model from S3: s3://{self.bucket_name}/{self.model_path}")
+
+            # 🔍 Debug what model_path is
+            if self.model_path.endswith("/"):
+                raise ValueError(
+                    f"Model path '{self.model_path}' looks like a folder, not a file key. "
+                    f"Pass the full file key, e.g. 'models/model.pkl'"
+                )
+
             self.loaded_model: MyModel = self.s3.load_model(
                 model_name=self.model_path,
                 bucket_name=self.bucket_name
             )
+
             if not isinstance(self.loaded_model, MyModel):
                 raise TypeError(
                     f"Loaded object is not MyModel. Got: {type(self.loaded_model)}"
                 )
-            logging.info("✅ Model successfully loaded into memory")
+
+            logging.info("Model successfully loaded into memory")
             return self.loaded_model
         except Exception as e:
             raise MyException(e, sys)
@@ -72,7 +82,7 @@ class Proj1Estimator:
                 bucket_name=self.bucket_name,
                 remove=remove
             )
-            logging.info("✅ Model successfully uploaded to S3")
+            logging.info("Model successfully uploaded to S3")
         except Exception as e:
             raise MyException(e, sys)
 
@@ -88,7 +98,7 @@ class Proj1Estimator:
                 self.load_model()
 
             predictions = self.loaded_model.predict(dataframe=dataframe)
-            logging.info(f"✅ Predictions generated for {len(dataframe)} rows")
+            logging.info(f"Predictions generated for {len(dataframe)} rows")
             return predictions
         except Exception as e:
             raise MyException(e, sys)

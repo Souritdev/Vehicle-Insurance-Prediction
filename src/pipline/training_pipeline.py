@@ -146,7 +146,7 @@ class TrainPipeline:
                 return None
 
             self.start_model_pusher(model_evaluation_artifact)
-            logging.info("Training pipeline complete ✅")
+            logging.info("Training pipeline complete")
         except Exception as e:
             raise MyException(e, sys) from e
 

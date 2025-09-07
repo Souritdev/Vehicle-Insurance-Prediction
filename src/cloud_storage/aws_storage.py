@@ -105,7 +105,7 @@ class SimpleStorageService:
             file_object = self.get_file_object(model_file, bucket_name)
             model_obj = self.read_object(file_object, decode=False)
             model = pickle.loads(model_obj)
-            logging.info(f"✅ Model '{model_name}' loaded from s3://{bucket_name}/{model_file}")
+            logging.info(f"Model '{model_name}' loaded from s3://{bucket_name}/{model_file}")
             return model
         except Exception as e:
             raise MyException(e, sys) from e
@@ -117,7 +117,7 @@ class SimpleStorageService:
         try:
             folder_obj = folder_name.rstrip("/") + "/"
             self.s3_client.put_object(Bucket=bucket_name, Key=folder_obj)
-            logging.info(f"✅ Folder ensured: s3://{bucket_name}/{folder_obj}")
+            logging.info(f"Folder ensured: s3://{bucket_name}/{folder_obj}")
         except Exception as e:
             raise MyException(e, sys) from e
 
@@ -142,7 +142,7 @@ class SimpleStorageService:
         try:
             data_frame.to_csv(local_filename, index=False, header=True)
             self.upload_file(local_filename, bucket_filename, bucket_name)
-            logging.info(f"✅ DataFrame uploaded as CSV → s3://{bucket_name}/{bucket_filename}")
+            logging.info(f"DataFrame uploaded as CSV → s3://{bucket_name}/{bucket_filename}")
         except Exception as e:
             raise MyException(e, sys) from e
 
