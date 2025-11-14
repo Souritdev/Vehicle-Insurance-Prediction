@@ -1,0 +1,119 @@
+body {
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  background: linear-gradient(135deg, #f0f2f5, #dfe6e9); /* soft neutral */
+  color: #2d3436;
+}
+
+.container {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 28px;
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 200, 200, 0.4);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  animation: fadeIn 0.8s ease;
+  transition: transform 0.3s ease;
+}
+
+.container:hover {
+  transform: translateY(-4px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-weight: 700;
+  font-size: 28px;
+  color: #2d3436; /* professional clean title */
+  letter-spacing: 0.8px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+label {
+  text-align: left;
+  font-weight: 600;
+  font-size: 15px;
+  color: #2d3436;
+}
+
+input {
+  padding: 12px 14px;
+  border: 1px solid #dcdde1;
+  border-radius: 10px;
+  font-size: 15px;
+  background: #fff;
+  color: #2d3436;
+  transition: all 0.2s ease;
+}
+
+input:focus {
+  border-color: #0984e3;
+  box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.15);
+  outline: none;
+}
+
+/* ===== Buttons (professional look) ===== */
+button {
+  padding: 12px 18px;
+  background: #0984e3; /* clean SaaS blue */
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(9, 132, 227, 0.25);
+}
+
+button:hover {
+  background: #0769b8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(9, 132, 227, 0.35);
+}
+
+.train-button {
+  background: #00b894; /* green accent */
+  box-shadow: 0 4px 10px rgba(0, 184, 148, 0.25);
+  margin-top: 10px;
+}
+
+.train-button:hover {
+  background: #019875;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 184, 148, 0.35);
+}
+
+/* ===== Result Box ===== */
+.result {
+  margin-top: 22px;
+  padding: 15px;
+  border-radius: 12px;
+  background: #f5f6fa;
+  border: 1px solid #dfe6e9;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  text-align: left;
+}
+
+.result h2 {
+  font-weight: 700;
+  color: #2d3436;
+}
